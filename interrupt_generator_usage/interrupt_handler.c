@@ -8,15 +8,13 @@ int OZNAKA_CEKANJA[N];
 int PRIORITET[N];
 int TEKUCI_PRIORITET;
 
-void zabrani_prekidanje(){
-   int i;
-   for(i=0; i<5; i++)
-      sighold(sig[i]);
+void disable_interrupts (void) {
+   for(int i=0; i < SIGNALS; i++)
+      sighold ( sig[i] );
    }
 
-void dozvoli_prekidanje(){
-   int i;
-   for(i=0; i<5; i++)
+void enable_interrupts (void) {
+   for(int i=0; i < SIGNALS; i++)
       sigrelse(sig[i]);
    }
 
@@ -93,31 +91,38 @@ void interrupt_handler(int sig){
 
 
 }
-void register_interrupts(){ 
+
+void register_interrupts (void) { 
   for(int i = 0; i <= SIGNALS; i++) { 
     sigset (SIGNAL_TYPES[i], interrupt_handler);
   }
 }
 
-int main ( void ){
-  int iter;
-  register_interrupts();
+void simulate_main_program_execution (void) {
+  printf("%d", iter % 10 );
+  for(int i = 0; i <= SIGNALS; i++) printf(" - ");
+  printf("\n");
+  
+  sleep(1);
+}
 
+void print_main_info (void) {
   printf(">>PID=%d\n", getpid());
   printf("GP");
   for(int i = 0; i <= SIGNALS; i++) printf("S%d", i);
   printf("\n");
   for(int i = 0; i <= SIGNALS; i++) printf("---");
   printf("\n");
+}
+
+int main (void) {
+  register_interrupts();
+  print_main_info();
   
-  for(iter = 0; iter < 40; iter++){
-     printf("%d", iter % 10 );
-     for(int i = 0; i <= SIGNALS; i++) printf(" - ");
-     printf("\n");
-     
-     sleep(1);
+  for(int iter = 0;; iter < 40; iter++) {
+     simulate_main_program_execution();
   }
 
   printf (">>Process ended.\n");
-return 0;
+  return 0;
 }
