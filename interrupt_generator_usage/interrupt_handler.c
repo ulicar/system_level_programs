@@ -1,11 +1,12 @@
 #include <stdio.h>
 #include <signal.h>
-#define N 6
+#include "signals.h"
+
+#define N SIGNALS+1
 
 int OZNAKA_CEKANJA[N];
 int PRIORITET[N];
 int TEKUCI_PRIORITET;
-int sig[]={SIGUSR1, SIGUSR2, SIGTERM, SIGQUIT, SIGINT};
 
 void zabrani_prekidanje(){
    int i;
@@ -92,12 +93,10 @@ void interrupt_handler(int sig){
 
 
 }
-void register_interrupts(){
-   sigset (SIGUSR1, interrupt_handler);
-   sigset (SIGUSR2, interrupt_handler);
-   sigset (SIGTERM, interrupt_handler);
-   sigset (SIGQUIT, interrupt_handler);
-   sigset (SIGINT, interrupt_handler);
+void register_interrupts(){ 
+  for(int i = 0; i <= SIGNALS; i++) { 
+    sigset (SIGNAL_TYPES[i], interrupt_handler);
+  }
 }
 
 int main ( void ){
@@ -105,11 +104,17 @@ int main ( void ){
   register_interrupts();
 
   printf(">>PID=%d\n", getpid());
-  printf("GP S1 S2 S3 S4 S5\n");
-  printf("-----------------\n");
+  printf("GP");
+  for(int i = 0; i <= SIGNALS; i++) printf("S%d", i);
+  printf("\n");
+  for(int i = 0; i <= SIGNALS; i++) printf("---");
+  printf("\n");
   
-  for(j=0; j < 40; j++){
-     printf("%d - - - - -\n", j % 10 );
+  for(iter = 0; iter < 40; iter++){
+     printf("%d", iter % 10 );
+     for(int i = 0; i <= SIGNALS; i++) printf(" - ");
+     printf("\n");
+     
      sleep(1);
   }
 
