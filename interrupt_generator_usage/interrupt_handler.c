@@ -37,10 +37,7 @@ void interrupt_handler(int sig){
   
   WAITING_LIST[curr_interrupt]++;
   do{
-    priority_signal = 0;
-    for(int signal = 1; signal <= SIGNALS; signal++)
-       if((WAITING_LIST[signal] != 0) && (signal > CURRENT_PRIORITY))
-            priority_signal = signal;
+    priority_signal = get_top_priority_signal();
             
     if (priority_signal > 0){
       WAITING_LIST[priority_signal]--;
@@ -52,8 +49,16 @@ void interrupt_handler(int sig){
     }
   } while (priority_signal > 0);
   
-  CURRENT_PRIORITY = PRIORITY[x];
+  CURRENT_PRIORITY = PRIORITY[priority_signal];
   enable_interrupts();
+}
+int get_top_priority_signal(){
+  int top_priority = 0;
+  for(int signal = 1; signal <= SIGNALS; signal++)
+    if((WAITING_LIST[signal] != 0) && (signal > CURRENT_PRIORITY))
+      top_priority = signal;
+  
+  return top_priority;
 }
 
 void register_interrupts (void) { 
