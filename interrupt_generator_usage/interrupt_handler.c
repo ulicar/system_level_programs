@@ -28,25 +28,29 @@ void simmulate_interrupt_routine(int interrupt){
   }
 
 void interrupt_handler(int sig){
-  int n,x,k;
+  int curr_interrupt;
   disable_interrupts();
   print_recieved_interrupt(sig);
 
-  WAITING_LIST[n]++;
+  curr_interrupt = find_array_index (sig, SIGNAL_TYPES, SIGNALS);
+  if (curr_interrupt == -1) return;s
+  
+  WAITING_LIST[curr_interrupt]++;
   do{
-    x=0;
-    for(k=1;k<6;k++)
-       if((WAITING_LIST[k]!=0) && (k>CURRENT_PRIORITY))
-            x=k;
-    if (x>0){
-      WAITING_LIST[x]--;
-      PRIORITY[x] = CURRENT_PRIORITY;
-      CURRENT_PRIORITY = x;
+    priority_signal = 0;
+    for(int signal = 1; signal <= SIGNALS; signal++)
+       if((WAITING_LIST[signal] != 0) && (signal > CURRENT_PRIORITY))
+            priority_signal = signal;
+            
+    if (priority_signal > 0){
+      WAITING_LIST[priority_signal]--;
+      PRIORITY[priority_signal] = CURRENT_PRIORITY;
+      CURRENT_PRIORITY = priority_signal;
       enable_interrupts();
-      simmulate_interrupt_routine(x);
+      simmulate_interrupt_routine(priority_signal);
       disable_interrupts();
     }
-  } while ( x > 0);
+  } while (priority_signal > 0);
   
   CURRENT_PRIORITY = PRIORITY[x];
   enable_interrupts();
@@ -65,9 +69,8 @@ void simulate_main_program_execution (void) {
   
   sleep(1);
 }
-void print_recieved_interrupt(int interrupt_type) {
 
-  int index = find_array_index (interrupt_type, SIGNAL_TYPES, SIGNALS);
+void print_recieved_interrupt(int index) {
   if (index != -1) {
     for(int i = 0; i <= index; i++) printf("- ");
     printf("X ");
